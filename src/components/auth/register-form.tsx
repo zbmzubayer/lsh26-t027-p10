@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircleIcon } from "lucide-react";
+import { AlertCircleIcon, Zap } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -44,11 +44,14 @@ export function RegisterForm() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Create account</CardTitle>
+    <Card className="w-full shadow-sm">
+      <CardHeader className="space-y-1 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+          <Zap className="h-6 w-6 fill-primary text-primary" />
+        </div>
+        <CardTitle className="text-2xl">Create account</CardTitle>
         <CardDescription>
-          Register to start tracking your prepaid meter.
+          Start tracking your prepaid meter and stop overpaying.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -129,7 +132,10 @@ export function RegisterForm() {
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link
+              href="/login"
+              className="font-medium text-primary hover:underline"
+            >
               Sign in
             </Link>
           </p>
