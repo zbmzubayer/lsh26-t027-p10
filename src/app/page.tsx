@@ -4,6 +4,7 @@ import {
   CalendarClock,
   ChevronRight,
   Gauge,
+  LayoutDashboardIcon,
   PiggyBank,
   ShieldCheck,
   Zap,
@@ -17,8 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getSession } from "@/lib/auth";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await getSession();
+  const isAuthenticated = !!session;
   return (
     <div className="flex flex-col">
       <section className="relative overflow-hidden border-b bg-background px-4 py-20 sm:px-6 sm:py-28 lg:py-36">
@@ -38,26 +42,41 @@ export default function LandingPage() {
             meters.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/register"
-              className={buttonVariants({
-                size: "lg",
-                className: "h-11 px-8 text-base",
-              })}
-            >
-              Get started free
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Link>
-            <Link
-              href="/login"
-              className={buttonVariants({
-                variant: "outline",
-                size: "lg",
-                className: "h-11 px-8 text-base",
-              })}
-            >
-              Sign in
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                className={buttonVariants({
+                  size: "lg",
+                  className: "h-11 gap-2 px-8 text-base",
+                })}
+              >
+                <LayoutDashboardIcon className="h-4 w-4" />
+                Go to dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className={buttonVariants({
+                    size: "lg",
+                    className: "h-11 px-8 text-base",
+                  })}
+                >
+                  Get started free
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Link>
+                <Link
+                  href="/login"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                    className: "h-11 px-8 text-base",
+                  })}
+                >
+                  Sign in
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -211,26 +230,41 @@ export default function LandingPage() {
           your next recharge is really buying.
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/register"
-            className={buttonVariants({
-              size: "lg",
-              className: "h-11 px-8 text-base",
-            })}
-          >
-            Create free account
-            <ChevronRight className="ml-1 h-4 w-4" />
-          </Link>
-          <Link
-            href="/login"
-            className={buttonVariants({
-              variant: "outline",
-              size: "lg",
-              className: "h-11 px-8 text-base",
-            })}
-          >
-            Already have an account?
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href="/dashboard"
+              className={buttonVariants({
+                size: "lg",
+                className: "h-11 gap-2 px-8 text-base",
+              })}
+            >
+              <LayoutDashboardIcon className="h-4 w-4" />
+              Go to dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/register"
+                className={buttonVariants({
+                  size: "lg",
+                  className: "h-11 px-8 text-base",
+                })}
+              >
+                Create free account
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Link>
+              <Link
+                href="/login"
+                className={buttonVariants({
+                  variant: "outline",
+                  size: "lg",
+                  className: "h-11 px-8 text-base",
+                })}
+              >
+                Already have an account?
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
