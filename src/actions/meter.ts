@@ -2,10 +2,17 @@
 
 import Decimal from "decimal.js";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { isFirstDayOfMonth, parseDate } from "@/lib/date-utc";
 import prisma from "@/lib/prisma";
+import {
+  addReadingSchema,
+  addRechargeSchema,
+  createHouseholdSchema,
+  deleteHouseholdSchema,
+  importHistorySchema,
+  updateSettingsSchema,
+} from "@/validations/meter.validation";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -31,26 +38,6 @@ async function requireHouseholdAccess(householdId: string, userId: string) {
   }
   return household;
 }
-
-function decimalString(message?: string) {
-  return z.string().refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, {
-    message: message ?? "Must be a valid non-negative number",
-  });
-}
-
-const createHouseholdSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  meterNumber: z.string().optional(),
-  openingBalance: decimalString("Opening balance must be a number"),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
-  usualDailyUnits: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((v) => (v === "" || v === null || v === undefined ? null : v))
-    .refine((v) => v === null || (!Number.isNaN(Number(v)) && Number(v) > 0), {
-      message: "Usual daily units must be a positive number",
-    }),
-});
 
 export async function createHouseholdAction(
   input: unknown,
@@ -93,14 +80,6 @@ export async function createHouseholdAction(
   }
 }
 
-const addReadingSchema = z.object({
-  householdId: z.string().min(1),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
-  units: z.string().refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, {
-    message: "Units must be a non-negative number",
-  }),
-});
-
 export async function addReadingAction(input: unknown): Promise<ActionResult> {
   const parsed = addReadingSchema.safeParse(input);
   if (!parsed.success) {
@@ -132,13 +111,6 @@ export async function addReadingAction(input: unknown): Promise<ActionResult> {
     return { ok: false, error: message };
   }
 }
-
-const addRechargeSchema = z.object({
-  householdId: z.string().min(1),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
-  amount: decimalString("Amount must be a number"),
-  note: z.string().optional(),
-});
 
 export async function addRechargeAction(input: unknown): Promise<ActionResult> {
   const parsed = addRechargeSchema.safeParse(input);
@@ -172,20 +144,6 @@ export async function addRechargeAction(input: unknown): Promise<ActionResult> {
     return { ok: false, error: message };
   }
 }
-
-const updateSettingsSchema = z.object({
-  householdId: z.string().min(1),
-  usualDailyUnits: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((v) => (v === "" || v === null || v === undefined ? null : v))
-    .refine((v) => v === null || (!Number.isNaN(Number(v)) && Number(v) > 0), {
-      message: "Usual daily units must be a positive number",
-    }),
-  lowThresholdBdt: decimalString("Low threshold must be a number"),
-  lowAmountBdt: decimalString("Low amount must be a number"),
-  monthlyAmountBdt: decimalString("Monthly amount must be a number"),
-});
 
 export async function updateSettingsAction(
   input: unknown,
@@ -228,10 +186,6 @@ export async function updateSettingsAction(
   }
 }
 
-const deleteHouseholdSchema = z.object({
-  householdId: z.string().min(1),
-});
-
 export async function deleteHouseholdAction(
   input: unknown,
 ): Promise<ActionResult> {
@@ -256,12 +210,6 @@ export async function deleteHouseholdAction(
     return { ok: false, error: message };
   }
 }
-
-const importHistorySchema = z.object({
-  householdId: z.string().min(1),
-  readingsText: z.string(),
-  rechargesText: z.string(),
-});
 
 function parseHistoryLines(
   text: string,

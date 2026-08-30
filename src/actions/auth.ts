@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import {
   clearSession,
   createSession,
@@ -10,17 +9,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-
-const loginSchema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
-});
-
-const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+import { loginSchema, registerSchema } from "@/validations/auth.validation";
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
 
