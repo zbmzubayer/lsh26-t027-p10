@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 
 import "./globals.css";
 import { MainNav } from "@/components/meter/main-nav";
+import { TanstackQueryProvider } from "@/providers/tanstack-query-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,8 +35,10 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <MainNav />
-          <main className="flex-1">{children}</main>
+          <TanstackQueryProvider>
+            <MainNav />
+            <main className="flex-1">{children}</main>
+          </TanstackQueryProvider>
         </ThemeProvider>
       </body>
     </html>

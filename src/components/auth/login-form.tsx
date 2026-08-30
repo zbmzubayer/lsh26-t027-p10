@@ -1,9 +1,12 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { AlertCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { loginAction } from "@/actions/auth";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,12 +15,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import { Spinner } from "@/components/ui/spinner";
+import { loginService } from "@/services/auth.api";
+import { type LoginDto, loginSchema } from "@/validations/auth.validation";
 
 export function LoginForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const form = useForm<LoginDto>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const { mutateAsync, error, isPending } = useMutation({
+    mutationFn: loginService,
+    onSuccess: () => {
+      router.replace("/");
+    },
+  });
+
+  async function onSubmit(data: LoginDto) {
+    await mutateAsync(data);
+  }
 
   return (
     <Card className="w-full">
@@ -28,38 +49,63 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form
-          action={async (formData) => {
-            setError(null);
-            const result = await loginAction({
-              email: formData.get("email") as string,
-              password: formData.get("password") as string,
-            });
-            if (result.ok) {
-              router.push("/");
-              router.refresh();
-            } else {
-              setError(result.error);
-            }
-          }}
-          className="grid gap-4"
-        >
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit">Sign in</Button>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState: { error: fieldError } }) => (
+              <Field>
+                <div className="flex w-full items-center justify-between">
+                  <FieldLabel>Email</FieldLabel>
+                  {fieldError && (
+                    <FieldError className="flex items-center gap-1">
+                      <AlertCircleIcon className="size-3.5" />
+                      {fieldError.message}
+                    </FieldError>
+                  )}
+                </div>
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  {...field}
+                />
+              </Field>
+            )}
+          />
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState: { error: fieldError } }) => (
+              <Field>
+                <div className="flex w-full items-center justify-between">
+                  <FieldLabel>Password</FieldLabel>
+                  {fieldError && (
+                    <FieldError className="flex items-center gap-1">
+                      <AlertCircleIcon className="size-3.5" />
+                      {fieldError.message}
+                    </FieldError>
+                  )}
+                </div>
+                <PasswordInput
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  {...field}
+                />
+              </Field>
+            )}
+          />
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertTitle>Login Failed</AlertTitle>
+              <AlertDescription>{error.message}</AlertDescription>
+            </Alert>
+          )}
+          <Button type="submit" disabled={isPending} className="w-full">
+            {isPending && <Spinner className="mr-2" />}
+            Sign in
+          </Button>
           <p className="text-center text-sm text-muted-foreground">
             No account?{" "}
             <Link href="/register" className="text-primary hover:underline">

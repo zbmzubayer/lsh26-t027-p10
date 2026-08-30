@@ -1,9 +1,12 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { AlertCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { registerAction } from "@/actions/auth";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,12 +15,33 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import { Spinner } from "@/components/ui/spinner";
+import { registerService } from "@/services/auth.api";
+import {
+  type RegisterDto,
+  registerSchema,
+} from "@/validations/auth.validation";
 
 export function RegisterForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const form = useForm<RegisterDto>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { name: "", email: "", password: "" },
+  });
+
+  const { mutateAsync, error, isPending } = useMutation({
+    mutationFn: registerService,
+    onSuccess: () => {
+      router.replace("/welcome");
+    },
+  });
+
+  async function onSubmit(data: RegisterDto) {
+    await mutateAsync(data);
+  }
 
   return (
     <Card className="w-full">
@@ -28,49 +52,81 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form
-          action={async (formData) => {
-            setError(null);
-            const result = await registerAction({
-              name: formData.get("name") as string,
-              email: formData.get("email") as string,
-              password: formData.get("password") as string,
-            });
-            if (result.ok) {
-              router.push("/welcome");
-              router.refresh();
-            } else {
-              setError(result.error);
-            }
-          }}
-          className="grid gap-4"
-        >
-          <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" placeholder="Your name" required />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              minLength={8}
-              required
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit">Create account</Button>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState: { error: fieldError } }) => (
+              <Field>
+                <div className="flex w-full items-center justify-between">
+                  <FieldLabel>Name</FieldLabel>
+                  {fieldError && (
+                    <FieldError className="flex items-center gap-1">
+                      <AlertCircleIcon className="size-3.5" />
+                      {fieldError.message}
+                    </FieldError>
+                  )}
+                </div>
+                <Input placeholder="Your name" autoComplete="name" {...field} />
+              </Field>
+            )}
+          />
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState: { error: fieldError } }) => (
+              <Field>
+                <div className="flex w-full items-center justify-between">
+                  <FieldLabel>Email</FieldLabel>
+                  {fieldError && (
+                    <FieldError className="flex items-center gap-1">
+                      <AlertCircleIcon className="size-3.5" />
+                      {fieldError.message}
+                    </FieldError>
+                  )}
+                </div>
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  {...field}
+                />
+              </Field>
+            )}
+          />
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState: { error: fieldError } }) => (
+              <Field>
+                <div className="flex w-full items-center justify-between">
+                  <FieldLabel>Password</FieldLabel>
+                  {fieldError && (
+                    <FieldError className="flex items-center gap-1">
+                      <AlertCircleIcon className="size-3.5" />
+                      {fieldError.message}
+                    </FieldError>
+                  )}
+                </div>
+                <PasswordInput
+                  placeholder="Create a password"
+                  autoComplete="new-password"
+                  {...field}
+                />
+              </Field>
+            )}
+          />
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertTitle>Registration Failed</AlertTitle>
+              <AlertDescription>{error.message}</AlertDescription>
+            </Alert>
+          )}
+          <Button type="submit" disabled={isPending} className="w-full">
+            {isPending && <Spinner className="mr-2" />}
+            Create account
+          </Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/login" className="text-primary hover:underline">
