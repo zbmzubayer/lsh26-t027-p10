@@ -1,0 +1,80 @@
+{
+  "team_id": "LSH26-T027",
+  "problem_id": "P10",
+  "repository_name": "lsh26-t027-p10",
+  "live_url": "https://lsh26-t027-p10.vercel.app",
+  "demo_video_url_optional": "",
+  "event_start_code": "LSH26-8490-C900",
+  "repository_created_before_release": false,
+  "pre_event_materials": [],
+  "sample_data": {
+    "loads_published_fixture": true,
+    "method": "Prisma seed from published JSON fixture (data/public.json) plus a direct JSON adapter for parity testing",
+    "reset_instructions": "Run `npm run db:push --force-reset` followed by `npm run db:seed` to restore the seeded households from prisma/seed.ts. The original public fixture is kept in data/public.json."
+  },
+  "problem_solving_method": "Implemented a pure Decimal.js tariff engine that replays each day in order (month reset on the 1st, recharge before daily deduction, fixed charges on the month's first recharge, VAT on energy). The same engine powers the balance chart, run-out projection, top-up advisor, habit comparison and monthly bill, so every screen reads off one source of truth.",
+  "requirements": {
+    "R1": {
+      "status": "complete",
+      "evidence": "prisma/seed.ts seeds households with 6+ months of daily readings, including light months, heavy summer months and large last-week recharges; verified by __tests__/adapter.test.ts"
+    },
+    "R2": {
+      "status": "complete",
+      "evidence": "src/lib/engine.ts replay() implements the exact day loop, slab splitting, fixed charges and VAT; src/app/dashboard/page.tsx renders the balance line with recharge markers and month bands"
+    },
+    "R3": {
+      "status": "complete",
+      "evidence": "src/app/advisor/page.tsx calls engine.runsOut() and engine.topUpFor(), showing the run-out date and a four-part recharge breakdown (base, premium, fixed, VAT)"
+    },
+    "R4": {
+      "status": "complete",
+      "evidence": "src/app/habits/page.tsx and src/lib/engine.ts compareHabits() run both habits on identical consumption and calendar-month slabs, reporting cost (energy+VAT+fixed charges) and ties correctly; verified in __tests__/engine.test.ts"
+    }
+  },
+  "team_members": [
+    {
+      "registered_name": "Tanvir Hasan",
+      "github_username": "tanvirhasan91919",
+      "major_contribution": "Supporting development and testing",
+      "evidence_paths_or_commits": []
+    },
+    {
+      "registered_name": "Zubayer Bin Matin",
+      "github_username": "zbmzubayer",
+      "major_contribution": "Main contributor — core implementation, UI and feature integration",
+      "evidence_paths_or_commits": []
+    },
+    {
+      "registered_name": "Zahid Chowdhury",
+      "github_username": "zahid0023",
+      "major_contribution": "Architectural guidance and specification alignment",
+      "evidence_paths_or_commits": []
+    },
+    {
+      "registered_name": "Asir Hamim",
+      "github_username": "asirhameem",
+      "major_contribution": "Supporting development and UI/UX validation",
+      "evidence_paths_or_commits": []
+    }
+  ],
+  "major_design_decisions": [
+    "Pure Decimal.js engine in src/lib/engine.ts keeps money exact and makes the tariff logic testable",
+    "Calendar-month slab counter reset on the 1st, not on recharge, matching the published fixture evidence",
+    "Fixed charges (demand + meter rent) are deducted only on a month's first recharge",
+    "Single replay array feeds every screen (dashboard, advisor, habits, bill) so results stay consistent",
+    "Next.js route groups separate public landing/auth pages from the protected dashboard"
+  ],
+  "known_limitations": [
+    "Custom household creation and 'paste your own history' are not yet exposed through the UI; only the seeded fixture households are browsable",
+    "The live deployment URL is not set in this manifest"
+  ],
+  "ai_tools_used": [
+    {
+      "tool": "Kimi Code CLI",
+      "used_for": "Implementing the tariff engine, UI pages, auth flow and test suite based on the problem specification",
+      "how_output_was_verified": "Ran `npm run lint`, `npm run build` and `npm test`; all 11 tests pass, including fixture parity and minimum-balance checks"
+    }
+  ],
+  "licenses_file": "LICENSES.md",
+  "declaration": "The information above is complete and truthful to the best of the team's knowledge."
+}
