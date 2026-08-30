@@ -1,39 +1,63 @@
 import { jwtVerify } from "jose";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
+const AUTH_ROUTES = ["/login", "/register"];
+const PROTECTED_ROUTES = [
+  "/dashboard",
+  "/advisor",
+  "/habits",
+  "/settings",
+  "/welcome",
+  "/bill",
+  "/api/run",
+];
 const SESSION_COOKIE = "session";
 
-function secret() {
+function getAuthSecret(): Uint8Array {
   const value = process.env.AUTH_SECRET;
-  if (!value) throw new Error("AUTH_SECRET is not set");
+  if (!value) {
+    throw new Error("AUTH_SECRET is not set");
+  }
   return new TextEncoder().encode(value);
 }
 
-const publicPaths = ["/", "/login", "/register"];
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
+
+function isAuthRoute(pathname: string): boolean {
+  return AUTH_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
+
+async function verifySessionToken(
+  token: string,
+): Promise<{ userId: string } | null> {
+  try {
+    const { payload } = await jwtVerify<{ userId: string }>(
+      token,
+      getAuthSecret(),
+    );
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  const isPublic = publicPaths.some((p) => pathname.startsWith(p));
   const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const session = token ? await verifySessionToken(token) : null;
 
-  let isAuthenticated = false;
-  if (token) {
-    try {
-      await jwtVerify(token, secret());
-      isAuthenticated = true;
-    } catch {
-      isAuthenticated = false;
-    }
-  }
-
-  if (isPublic && isAuthenticated) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (!isPublic && !isAuthenticated) {
+  if (isProtectedRoute(pathname) && !session) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  if (isAuthRoute(pathname) && session) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
@@ -41,15 +65,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/dashboard",
-    "/advisor",
-    "/habits",
-    "/settings",
-    "/welcome",
-    "/bill/:path*",
-    "/api/run",
-    "/login",
-    "/register",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
