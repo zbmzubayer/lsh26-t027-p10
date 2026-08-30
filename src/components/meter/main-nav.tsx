@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/", label: "Balance" },
+  { href: "/dashboard", label: "Balance" },
   { href: "/advisor", label: "Advisor" },
   { href: "/habits", label: "Habits" },
   { href: "/settings", label: "Settings" },
@@ -35,10 +35,7 @@ export function MainNav() {
 
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((link) => {
-            const isActive =
-              link.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(link.href);
+            const isActive = pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
@@ -83,10 +80,7 @@ export function MainNav() {
                 </Link>
                 <nav className="flex flex-col gap-2">
                   {links.map((link) => {
-                    const isActive =
-                      link.href === "/"
-                        ? pathname === "/"
-                        : pathname.startsWith(link.href);
+                    const isActive = pathname.startsWith(link.href);
                     return (
                       <Link
                         key={link.href}

@@ -136,7 +136,7 @@ export function SettingsForm({
                 householdId: household.id,
               });
               if (result.ok) {
-                router.push("/");
+                router.push("/dashboard");
               } else {
                 setDeleteError(result.error);
               }

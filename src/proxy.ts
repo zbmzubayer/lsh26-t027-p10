@@ -10,7 +10,7 @@ function secret() {
   return new TextEncoder().encode(value);
 }
 
-const publicPaths = ["/login", "/register"];
+const publicPaths = ["/", "/login", "/register"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,7 +29,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isPublic && isAuthenticated) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   if (!isPublic && !isAuthenticated) {
@@ -42,6 +42,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
+    "/dashboard",
     "/advisor",
     "/habits",
     "/settings",

@@ -32,7 +32,7 @@ export function LoginForm() {
   const { mutateAsync, error, isPending } = useMutation({
     mutationFn: loginService,
     onSuccess: () => {
-      router.replace("/");
+      router.replace("/dashboard");
     },
   });
 
