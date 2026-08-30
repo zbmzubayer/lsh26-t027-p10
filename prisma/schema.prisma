@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  password  String
+  name      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  households Household[]
+
+  @@map("users")
+}
+
+model Household {
+  id                String         @id @default(cuid())
+  name              String
+  meterNumber       String?        @map("meter_number")
+  openingBalance    Decimal        @map("opening_balance") @db.Decimal(10, 2)
+  startDate         DateTime       @map("start_date") @db.Date
+  usualDailyUnits   Decimal?       @map("usual_daily_units") @db.Decimal(5, 2)
+  lowThresholdBdt   Decimal        @default(100) @map("low_threshold_bdt") @db.Decimal(10, 2)
+  lowAmountBdt      Decimal        @default(500) @map("low_amount_bdt") @db.Decimal(10, 2)
+  monthlyAmountBdt  Decimal        @default(1500) @map("monthly_amount_bdt") @db.Decimal(10, 2)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  userId            String?        @map("user_id")
+  user              User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  readings          DailyReading[]
+  recharges         Recharge[]
+
+  @@index([userId])
+  @@map("households")
+}
+
+model DailyReading {
+  id          String    @id @default(cuid())
+  householdId String    @map("household_id")
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  date        DateTime  @db.Date
+  units       Decimal   @db.Decimal(6, 2)
+  createdAt   DateTime  @default(now())
+
+  @@unique([householdId, date])
+  @@index([householdId, date])
+  @@map("daily_readings")
+}
+
+model Recharge {
+  id          String    @id @default(cuid())
+  householdId String    @map("household_id")
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  date        DateTime  @db.Date
+  amountBdt   Decimal   @map("amount_bdt") @db.Decimal(10, 2)
+  note        String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([householdId, date])
+  @@index([householdId, date])
+  @@map("recharges")
+}
