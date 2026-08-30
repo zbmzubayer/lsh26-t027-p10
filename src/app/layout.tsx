@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 
 import "./globals.css";
 import { MainNav } from "@/components/meter/main-nav";
+import { getSession } from "@/lib/auth";
 import { TanstackQueryProvider } from "@/providers/tanstack-query-provider";
 
 const inter = Inter({
@@ -22,6 +23,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
   return (
     <html
       lang="en"
@@ -36,7 +38,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <TanstackQueryProvider>
-            <MainNav />
+            <MainNav isAuthenticated={!!session} />
             <main className="flex-1">{children}</main>
           </TanstackQueryProvider>
         </ThemeProvider>

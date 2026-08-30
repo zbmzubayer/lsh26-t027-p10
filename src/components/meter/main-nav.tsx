@@ -9,14 +9,14 @@ import { buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
-const links = [
+const appLinks = [
   { href: "/dashboard", label: "Balance" },
   { href: "/advisor", label: "Advisor" },
   { href: "/habits", label: "Habits" },
   { href: "/settings", label: "Settings" },
 ];
 
-export function MainNav() {
+export function MainNav({ isAuthenticated }: { isAuthenticated: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -33,35 +33,51 @@ export function MainNav() {
           <span className="sm:hidden">Advisor</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {links.map((link) => {
-            const isActive = pathname.startsWith(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "relative",
-                  isActive
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {link.label}
-                {isActive && (
-                  <span className="absolute bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        {isAuthenticated && (
+          <nav className="hidden items-center gap-1 md:flex">
+            {appLinks.map((link) => {
+              const isActive = pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "relative",
+                    isActive
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <div className="hidden md:block">
-            <LogoutButton />
-          </div>
+          {isAuthenticated ? (
+            <div className="hidden md:block">
+              <LogoutButton />
+            </div>
+          ) : (
+            <div className="hidden items-center gap-2 md:flex">
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
+                Sign in
+              </Link>
+              <Link href="/register" className={buttonVariants({ size: "sm" })}>
+                Get started
+              </Link>
+            </div>
+          )}
           <Sheet>
             <SheetTrigger
               aria-label="Open menu"
@@ -78,29 +94,54 @@ export function MainNav() {
                   <Zap className="h-5 w-5 fill-primary text-primary" />
                   Prepaid Meter Recharge Advisor
                 </Link>
-                <nav className="flex flex-col gap-2">
-                  {links.map((link) => {
-                    const isActive = pathname.startsWith(link.href);
-                    return (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className={cn(
-                          buttonVariants({
-                            variant: isActive ? "default" : "ghost",
-                            size: "lg",
-                          }),
-                          "justify-start",
-                        )}
-                      >
-                        {link.label}
-                      </Link>
-                    );
-                  })}
-                </nav>
-                <div className="mt-auto md:hidden">
-                  <LogoutButton />
-                </div>
+                {isAuthenticated ? (
+                  <nav className="flex flex-col gap-2">
+                    {appLinks.map((link) => {
+                      const isActive = pathname.startsWith(link.href);
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className={cn(
+                            buttonVariants({
+                              variant: isActive ? "default" : "ghost",
+                              size: "lg",
+                            }),
+                            "justify-start",
+                          )}
+                        >
+                          {link.label}
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                ) : (
+                  <nav className="flex flex-col gap-2">
+                    <Link
+                      href="/login"
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "lg" }),
+                        "justify-start",
+                      )}
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href="/register"
+                      className={cn(
+                        buttonVariants({ size: "lg" }),
+                        "justify-start",
+                      )}
+                    >
+                      Get started
+                    </Link>
+                  </nav>
+                )}
+                {isAuthenticated && (
+                  <div className="mt-auto md:hidden">
+                    <LogoutButton />
+                  </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>
