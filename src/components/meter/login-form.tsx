@@ -24,7 +24,7 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle>Sign in</CardTitle>
         <CardDescription>
-          Sign in to your P10 Meter Advisor account.
+          Sign in to your Prepaid Meter Recharge Advisor account.
         </CardDescription>
       </CardHeader>
       <CardContent>

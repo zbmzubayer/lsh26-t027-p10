@@ -1,4 +1,4 @@
-# P10 — Prepaid Meter Recharge Advisor
+# Prepaid Meter Recharge Advisor
 
 A Next.js app that replays a prepaid electricity meter against its real tariff and shows a household where the money went, when it will run out, and what a top-up is actually buying.
 

@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "P10 — Prepaid Meter Recharge Advisor",
+  title: "Prepaid Meter Recharge Advisor",
   description:
     "Replay a prepaid electricity meter and see where the money goes.",
 };

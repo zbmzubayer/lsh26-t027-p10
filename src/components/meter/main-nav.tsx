@@ -27,8 +27,10 @@ export function MainNav() {
           className="flex items-center gap-2 text-lg font-bold tracking-tight transition-colors hover:text-primary"
         >
           <Zap className="h-5 w-5 fill-primary text-primary" />
-          <span className="hidden sm:inline">P10 Meter Advisor</span>
-          <span className="sm:hidden">P10</span>
+          <span className="hidden sm:inline">
+            Prepaid Meter Recharge Advisor
+          </span>
+          <span className="sm:hidden">Advisor</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -77,7 +79,7 @@ export function MainNav() {
                   className="flex items-center gap-2 text-lg font-bold"
                 >
                   <Zap className="h-5 w-5 fill-primary text-primary" />
-                  P10 Meter Advisor
+                  Prepaid Meter Recharge Advisor
                 </Link>
                 <nav className="flex flex-col gap-2">
                   {links.map((link) => {
